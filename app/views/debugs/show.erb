@@ -1,0 +1,63 @@
+<style type="text/css">
+  .panel {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wall {
+    background-color: black;
+    color: white;
+  }
+  .player {
+    background-color: blue;
+  }
+  .enemy {
+    background-color: red;
+    color: white;
+  }
+  form {
+    display: inline;
+  }
+</style>
+
+<h3>Player</h3>
+<div>
+HP:<%= @user_status.hp %>/<%= UserStatus::FIRST_HP %>, ATTACK:<%= @user_status.attack %>
+</div>
+<% unless @battle_enemies.empty? %>
+<h3>Enemy</h3>
+<div>
+HP:<%= @battle_enemies.last.hp %>/<%= @battle_enemies.last.npc_enemy.hp %>, ATTACK:<%= @battle_enemies.last.attack %><br />
+X:<%= @battle_enemies.last.x %>, Y:<%= @battle_enemies.last.y %>
+</div>
+<% end %>
+
+<% @map.each_with_index do |map_x, x| %>
+  <% map_x.each_with_index do |map, y| %>
+    <% if map.type == DungeonMap::MAP_TYPE_WALL %>
+        <input type="submit" value=" 壁 " class="panel wall" />
+    <% elsif map.type == DungeonMap::MAP_TYPE_ENEMY %>
+      <form action="/debugs/step" method="post">
+        <input type="hidden" name="id"  value="<%= @user_game.id %>" />
+        <input type="hidden" name="x"  value="<%= x %>" />
+        <input type="hidden" name="y"  value="<%= y %>" />
+        <input type="submit" value="<%= x %>, <%= y %>" class="panel enemy" />
+      </form>
+    <% elsif map.type == DungeonMap::MAP_TYPE_PLAYER %>
+        <input type="button" value="<%= x %>, <%= y %>" class="panel player" />
+    <% else %>
+      <form action="/debugs/step" method="post">
+        <input type="hidden" name="id"  value="<%= @user_game.id %>" />
+        <input type="hidden" name="x"  value="<%= x %>" />
+        <input type="hidden" name="y"  value="<%= y %>" />
+        <input type="submit" value="<%= x %>, <%= y %>" class="panel" />
+      </form>
+    <% end %>
+  <% end %>
+  <br />
+<% end %>
+
+<h3>行動記録</h3>
+<% @report.each do |report| %>
+  <%= report.body %> | <%= report.created_at %><br />
+<% end %>

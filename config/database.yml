@@ -1,0 +1,76 @@
+# SQLite version 3.x
+#   gem install sqlite3
+#
+#   Ensure the SQLite 3 gem is defined in your Gemfile
+#   gem 'sqlite3'
+connection_master: &master
+  adapter: mysql2
+  encoding: utf8
+  reconnect: false
+  pool: 5
+  username: root
+
+#connection_master_slave_database: &master
+#  adapter: mysql2
+#  encoding: utf8
+#  reconnect: false
+#  pool: 5
+#  username: root
+
+connection_user1: &user1
+  adapter: mysql2
+  encoding: utf8
+  reconnect: false
+  pool: 5
+  username: root
+
+#connection_user1_slave_database: &user1
+#  adapter: mysql2
+#  encoding: utf8
+#  reconnect: false
+#  pool: 5
+#  username: root
+
+connection_user2: &user2
+  adapter: mysql2
+  encoding: utf8
+  reconnect: false
+  pool: 5
+  username: root
+
+#connection_user2_slave_database: &user2
+#  adapter: mysql2
+#  encoding: utf8
+#  reconnect: false
+#  pool: 5
+#  username: root
+
+development:
+  <<: *master
+  database: twi_rougue_development
+  seq:
+    user_seq_1:
+      <<: *master
+      database: twi_rougue_user_seq_development
+  shards:
+    user_shard_1:
+      <<: *user1
+      database: twi_rougue_user1_development
+    user_shard_2:
+      <<: *user2
+      database: twi_rougue_user2_development
+
+development_slave_database:
+  <<: *master
+  database: twi_rougue_development
+  seq:
+    user_seq_1:
+      <<: *master
+      database: twi_rougue_user_seq_development
+  shards:
+    user_shard_1:
+      <<: *user1
+      database: twi_rougue_user1_development
+    user_shard_2:
+      <<: *user2
+      database: twi_rougue_user2_development
