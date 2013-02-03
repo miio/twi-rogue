@@ -39,31 +39,35 @@ class DungeonBattle
     end
     UserInfo.transaction do
       #@enemies.lock do
-        state = STATE_CURRENT
-        player = UserStatus.where(user_id: @user_game.user_id).first(lock: :write)
-        # attack
-        enemy.hp -= player.attack
-        state = STATE_WIN if enemy.hp <= 0
-
+      state = STATE_CURRENT
+      player = UserStatus.where(user_id: @user_game.user_id).first(lock: :write)
+      # attack
+      enemy.hp -= player.attack
+      if enemy.hp <= 0
+        state = STATE_WIN
+        # report
+        self.make_report state, player.attack, 0
+      else
         # damage
         player.hp -= enemy.attack
         state = STATE_LOSE if player.hp <= 0
 
         # report
         self.make_report state, player.attack, enemy.attack
-
-        #save
+      end
+      @enemies.delete self.get_target(x, y, true)
+      unless state == STATE_WIN or state == STATE_CLEAR
+        @enemies << enemy.to_yaml
+      end
+      if @enemies.count <= 0
+        self.make_report STATE_CLEAR, player.attack, enemy.attack
         # Debug (Auto heal)
-        player.hp = UserStatus::FIRST_HP - enemy.attack
-        player.save!
-        @enemies.delete self.get_target(x, y, true)
-        unless state == STATE_WIN or state == STATE_CLEAR
-          @enemies << enemy.to_yaml
-        end
-        if @enemies.count <= 0
-          self.make_report STATE_CLEAR, player.attack, enemy.attack
-        end
-        #end
+        player.hp = UserStatus::FIRST_HP
+      end
+
+      #save
+      player.save!
+      #end
     end
 
   end
@@ -99,7 +103,7 @@ class DungeonBattle
     when STATE_CURRENT
       body = "[BATTLE] Attack #{attack} Get Damage #{damage}."
     when STATE_WIN
-      body = "[WIN] Attack #{attack} Get Damage #{damage}. Win!"
+      body = "[WIN] Attack #{attack} enemy died. Win!"
     when STATE_LOSE
       body = "[LOSE] Attack #{attack} Get Damage #{damage}. Died..."
     when STATE_CLEAR
